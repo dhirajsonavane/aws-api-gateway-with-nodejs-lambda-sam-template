@@ -1,4 +1,4 @@
-# aws-typescript
+# AWS API GATEWAY WITH NODE JS LAMBDA USING AWS SAM TEMPLATE
 
 To use the SAM CLI, you need the following tools.
 
