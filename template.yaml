@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM template for API GATEWAY
+
+Parameters:
+  DefaultLambdaTimeout:
+    Type: Number
+    Default: 5
+    Description: Default Lambda Timeout in seconds
+  DefaultLambdaMemorySize:
+    Type: Number
+    Default: 128
+    Description: Default Lambda Memory Size in MB
+  EnvironmentIdentifier:
+    Type: String
+    Default: dev
+    Description: Environment
+  ApiGatewayStageEnvironment:
+    Type: String
+    Default: dev
+    Description: Api Gateway Stage Environment
+  LambdaDynamoReadAccessExecutionRoleArn:
+    Type: String
+    Default: arn:aws:iam::359547166177:role/lambda-dynamodb-readonly-execution-role
+    Description: Lambda Execution Role Arn
+  
+Globals:
+  Function:
+    Runtime: nodejs12.x
+    Timeout: !Ref DefaultLambdaTimeout
+    MemorySize: !Ref DefaultLambdaMemorySize
+    Environment:
+        Variables:
+          EnvironmentId: !Ref EnvironmentIdentifier
+
+Resources:
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub '${EnvironmentIdentifier}-api'
+      StageName: dev
+      Variables:
+        Environment: !Ref ApiGatewayStageEnvironment
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Authorization'"
+        AllowOrigin: "'*'"
+
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      TableName: !Sub "${EnvironmentIdentifier}-Users"
+
+  GetUsersByCustomerLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.handler
+      FunctionName: !Sub '${EnvironmentIdentifier}-GetUsersByCustomerLambda'
+      CodeUri: src/user-management/getUsers
+      Role: !Ref LambdaDynamoReadAccessExecutionRoleArn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: "/v1/user-management/user/"
+            Method: get
+            RestApiId: !Ref Api
+
+  

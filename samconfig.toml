@@ -1,0 +1,10 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "sam-app"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-16q7em0d6hj8q"
+s3_prefix = "sam-app"
+region = "ap-southeast-2"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "DefaultLambdaTimeout=\"5\" DefaultLambdaMemorySize=\"128\" EnvironmentIdentifier=\"dev\" ApiGatewayStageEnvironment=\"dev\" LambdaDynamoReadAccessExecutionRoleArn=\"arn:aws:iam::359547166177:role/lambda-dynamodb-readonly-execution-role\""
